@@ -1,0 +1,94 @@
+plugins {
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+    id 'org.spongepowered.mixin' version '0.7.+'
+    id 'eclipse'
+    id 'maven-publish'
+}
+
+version = '1.0.0'
+group = 'bin.cnpcbag'
+archivesBaseName = 'cnpcbag'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+minecraft {
+    mappings channel: 'official', version: '1.20.1'
+
+    runs {
+        client {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            property 'mixin.debug.export', 'true'
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+            mods {
+                cnpcbag {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        server {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            mods {
+                cnpcbag {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        data {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            args '--mod', 'cnpcbag', '--all', '--output', file('src/generated/resources/')
+            mods {
+                cnpcbag {
+                    source sourceSets.main
+                }
+            }
+        }
+    }
+}
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+repositories {
+    mavenCentral()
+    flatDir { dirs 'libs' }
+}
+
+dependencies {
+    minecraft 'net.minecraftforge:forge:1.20.1-47.4.6'
+    implementation fg.deobf(files('libs/CustomNPCs-1.20.1-GBPort-Unofficial-1.20.1.20260711.jar'))
+    implementation fg.deobf(files('libs/curios-forge-5.14.1+1.20.1.jar'))
+    runtimeOnly fg.deobf(files('libs/cnpcplus-4.0.5-1.20.1Forge.jar'))
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+}
+
+mixin {
+    add sourceSets.main, 'cnpcbag.refmap.json'
+    config 'mixins.cnpcbag.json'
+}
+
+tasks.named('processResources', ProcessResources).configure {
+    exclude 'mixins.cnpcplus.json', 'META-INF/accesstransformer.cfg', 'assets/cnpcplus/**'
+}
+
+tasks.named('jar', Jar).configure {
+    archiveFileName = 'CNPC Bag for 1.20.1 V1.0.0.jar'
+    manifest.attributes('MixinConfigs': 'mixins.cnpcbag.json')
+    finalizedBy 'reobfJar'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.compilerArgs << '-Xlint:-processing'
+}
