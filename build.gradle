@@ -1,0 +1,55 @@
+buildscript {
+    repositories {
+        maven { url = 'https://maven.minecraftforge.net/' }
+        maven { url = 'https://repo.spongepowered.org/maven' }
+        maven { url = 'https://maven.cleanroommc.com/' }
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:3.+'
+        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
+    }
+}
+apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'org.spongepowered.mixin'
+apply plugin: 'eclipse'
+
+version = mod_version
+group = mod_group
+archivesBaseName = mod_id
+jar.archiveName = "CNPC Bag for 1.12.2 V${mod_version}.jar"
+sourceCompatibility = targetCompatibility = '1.8'
+tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
+
+minecraft {
+    mappings channel: mappings_channel, version: mappings_version
+}
+repositories {
+    maven { url = 'https://repo.spongepowered.org/maven' }
+    maven { url = 'https://maven.cleanroommc.com/' }
+    mavenCentral()
+}
+dependencies {
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    compileOnly files('libs/[自定义NPC] CustomNPCs_1.12.2-(05Jul20).jar')
+    runtimeOnly files('libs/[自定义NPC] CustomNPCs_1.12.2-(05Jul20).jar')
+    compileOnly files('libs/!mixinbooter-10.7.jar')
+    runtimeOnly files('libs/!mixinbooter-10.7.jar')
+    compileOnly('org.spongepowered:mixin:0.8.5') { transitive = false }
+    runtimeOnly('org.spongepowered:mixin:0.8.5') { transitive = false }
+    annotationProcessor('org.spongepowered:mixin:0.8.5:processor') { transitive = false }
+}
+processResources {
+    inputs.property 'version', project.version
+    inputs.property 'mcversion', minecraft_version
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+        expand 'mod_id': mod_id, 'mod_name': mod_name, 'version': project.version,
+                'mcversion': minecraft_version, 'mod_description': mod_description, 'mod_author': mod_author
+    }
+    from(sourceSets.main.resources.srcDirs) { exclude 'mcmod.info' }
+}
+sourceSets { main { refMap = 'refmap.cnpcbag.json' } }
+// MixinBooter discovers the late loader; CNPC classes must not be targeted during early startup.
+mixin {}
+jar.finalizedBy('reobfJar')

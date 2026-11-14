@@ -1,0 +1,18 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "bin.cnpcbag.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "refmap.cnpcbag.json",
+  "mixins": [
+    "MixinPlayerWrapper",
+    "MixinNpcWrapper",
+    "MixinContainerNPCTrader"
+  ],
+  "client": [
+    "client.MixinGuiNPCTrader"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
